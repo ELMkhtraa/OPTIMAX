@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>إشعارات الفروع الذكية | OptiMax</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome للأيقونات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- خط Tajawal -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style> 
+        body { font-family: 'Tajawal', sans-serif; } 
+        /* تحسين التمرير للموبايل */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: #020617; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-slate-950 text-white min-h-screen flex flex-col justify-between md:justify-center items-center p-2 sm:p-4 md:p-6">
+
+    <!-- حاوية التطبيق الرئيسية -->
+    <div class="w-full max-w-4xl flex flex-col gap-3 sm:gap-4 my-auto">
+
+        <!-- شريط "آخر إشعار عام وارد" -->
+        <div class="w-full bg-gradient-to-r from-cyan-950 via-slate-900 to-slate-900 border border-cyan-500/30 rounded-2xl p-3 sm:p-4 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 sm:gap-3">
+            <div class="flex items-center gap-3 w-full sm:w-auto overflow-hidden">
+                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold flex-shrink-0 border border-cyan-500/40">
+                    <i class="fa-solid fa-bolt animate-pulse"></i>
+                </div>
+                <div class="overflow-hidden w-full">
+                    <span class="text-[10px] sm:text-[11px] text-cyan-400 font-bold block">آخر إشعار عام وارد:</span>
+                    <p id="ticker-text" class="text-xs sm:text-sm font-semibold text-gray-200 truncate">في انتظار أول إشعار من الفروع...</p>
+                </div>
+            </div>
+            <span id="ticker-branch" class="text-[11px] bg-slate-800 text-cyan-300 px-3 py-1 rounded-full border border-slate-700 hidden self-end sm:self-auto font-bold flex-shrink-0">---</span>
+        </div>
+
+        <!-- الصندوق الرئيسي -->
+        <div class="w-full bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-800 shadow-2xl overflow-hidden flex flex-col md:flex-row min-h-[420px] sm:min-h-[480px]">
+            
+            <!-- القائمة الجانبية للفروع -->
+            <aside class="w-full md:w-64 bg-slate-900/90 border-b md:border-b-0 md:border-l border-slate-800 p-3 sm:p-5 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center gap-3 mb-3 sm:mb-6 pb-3 sm:pb-4 border-b border-slate-800">
+                        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 flex items-center justify-center text-base sm:text-lg font-bold">
+                            <i class="fa-solid fa-glasses"></i>
+                        </div>
+                        <div>
+                            <h2 class="font-extrabold text-sm sm:text-base text-gray-100">OptiMax</h2>
+                            <p class="text-[10px] sm:text-[11px] text-gray-400">إدارة الفروع التلقائية</p>
+                        </div>
+                    </div>
+
+                    <p class="text-xs text-gray-500 font-semibold mb-2 px-1">الفروع النشطة:</p>
+
+                    <nav id="branches-container" class="space-y-1.5 sm:space-y-2 max-h-40 md:max-h-none overflow-y-auto">
+                        <p id="no-branches-msg" class="text-xs text-gray-500 text-center py-6">لا توجد فروع مسجلة بعد...</p>
+                    </nav>
+                </div>
+
+                <div class="mt-3 pt-3 border-t border-slate-800 hidden md:flex items-center justify-between text-xs text-gray-400">
+                    <span>حالة النظام:</span>
+                    <span class="text-emerald-400 font-bold flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> متصل
+                    </span>
+                </div>
+            </aside>
+
+            <!-- منطقة عرض الإشعارات الرئيسية -->
+            <main class="flex-1 flex flex-col justify-between p-3.5 sm:p-6 bg-slate-900/40">
+                <div class="flex justify-between items-center pb-3 sm:pb-4 border-b border-slate-800">
+                    <div>
+                        <h3 class="font-extrabold text-sm sm:text-lg text-white flex items-center gap-1.5 truncate">
+                            إشعارات فرع: <span id="current-branch-title" class="text-cyan-400 truncate">---</span>
+                        </h3>
+                        <p class="text-[10px] sm:text-xs text-gray-400 mt-0.5">البيانات الواردة من برنامج Access</p>
+                    </div>
+                    <i class="fa-solid fa-bell text-base sm:text-xl text-slate-700 flex-shrink-0"></i>
+                </div>
+
+                <ul id="notif-list" class="flex-1 overflow-y-auto py-3 space-y-3 max-h-[300px] sm:max-h-[360px]">
+                    <li id="empty-msg" class="text-center py-10 sm:py-16 text-gray-500 text-xs sm:text-sm">
+                        <i class="fa-regular fa-folder-open text-3xl sm:text-4xl mb-2.5 block text-slate-700"></i>
+                        اختر فرعاً من القائمة الجانبية لعرض إشعاراته
+                    </li>
+                </ul>
+            </main>
+        </div>
+    </div>
+
+    <!-- كود الربط بـ Firebase ومعالجة البيانات -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, onChildAdded, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDwECqc2b5dpYt6qirv5qyrZKPc-h2WboQ",
+            authDomain: "elko3a.firebaseapp.com",
+            projectId: "elko3a",
+            storageBucket: "elko3a.firebasestorage.app",
+            messagingSenderId: "160475327360",
+            appId: "1:160475327360:web:4a083e7049dd10aa096f65",
+            measurementId: "G-NJKY0HJL34",
+            databaseURL: "https://elko3a-default-rtdb.firebaseio.com/" 
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        window.branchesMap = {};
+        window.currentBranch = null;
+
+        let isInitialLoad = true;
+        const notifRef = ref(db, 'notifications');
+
+        onChildAdded(notifRef, (snapshot) => {
+            const data = snapshot.val();
+            if (!data) return;
+
+            data._key = snapshot.key;
+
+            const branchName = data.branchName ? String(data.branchName).trim() : 'فرع غير معروف';
+            const messageText = data.message || data.transactionId || 'إشعار جديد';
+
+            if (!window.branchesMap[branchName]) {
+                window.branchesMap[branchName] = [];
+                addBranchToSidebar(branchName);
+            }
+
+            const isReallyNew = !isInitialLoad;
+
+            if (isReallyNew) {
+                window.branchesMap[branchName].unshift(data);
+                updateBranchUI(branchName, true);
+                updateLatestTicker(branchName, messageText);
+
+                if (window.currentBranch === branchName) {
+                    renderNotifications();
+                }
+            } else {
+                window.branchesMap[branchName].unshift(data);
+            }
+        });
+
+        setTimeout(() => {
+            isInitialLoad = false;
+        }, 1500);
+
+        function addBranchToSidebar(branchName) {
+            const container = document.getElementById('branches-container');
+            const noMsg = document.getElementById('no-branches-msg');
+            if (noMsg) noMsg.remove();
+
+            const safeId = 'branch_' + btoa(unescape(encodeURIComponent(branchName))).replace(/[^a-zA-Z0-9]/g, '');
+
+            if (document.getElementById(safeId)) return;
+
+            const btn = document.createElement('button');
+            btn.id = safeId;
+            btn.onclick = () => switchBranch(branchName);
+            btn.className = "branch-btn w-full p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-slate-800 hover:bg-slate-700/85 transition flex items-center justify-between border border-slate-700/60 text-right";
+            
+            btn.innerHTML = `
+                <div class="flex items-center gap-2 overflow-hidden">
+                    <span id="dot_${safeId}" class="hidden relative flex h-2.5 w-2.5 flex-shrink-0">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                    </span>
+                    <span class="font-bold text-xs sm:text-sm text-gray-200 truncate">${branchName}</span>
+                </div>
+                <span id="badge_${safeId}" class="hidden text-[10px] sm:text-xs bg-cyan-500/10 text-cyan-400 px-2 py-0.5 rounded-full border border-cyan-500/20 font-bold flex-shrink-0">0</span>
+            `;
+
+            container.appendChild(btn);
+        }
+
+        function updateBranchUI(branchName, hasNew = false) {
+            const safeId = 'branch_' + btoa(unescape(encodeURIComponent(branchName))).replace(/[^a-zA-Z0-9]/g, '');
+            const dot = document.getElementById(`dot_${safeId}`);
+            const badge = document.getElementById(`badge_${safeId}`);
+            
+            if (hasNew && window.currentBranch !== branchName) {
+                if (dot) dot.classList.remove('hidden');
+                if (badge) {
+                    badge.innerText = parseInt(badge.innerText || '0') + 1;
+                    badge.classList.remove('hidden');
+                }
+            }
+        }
+
+        function updateLatestTicker(branchName, messageText) {
+            const tickerText = document.getElementById('ticker-text');
+            const tickerBranch = document.getElementById('ticker-branch');
+            
+            tickerText.innerText = messageText;
+            tickerBranch.innerText = `من: ${branchName}`;
+            tickerBranch.classList.remove('hidden');
+        }
+
+        window.renderNotifications = function() {
+            const list = document.getElementById('notif-list');
+            const items = (window.branchesMap[window.currentBranch] || []);
+
+            if (items.length === 0) {
+                list.innerHTML = `
+                    <li class="text-center py-12 sm:py-16 text-gray-500 text-xs sm:text-sm">
+                        <i class="fa-regular fa-folder-open text-3xl sm:text-4xl mb-2.5 block text-slate-700"></i>
+                        لا توجد إشعارات لفرع ${window.currentBranch}
+                    </li>
+                `;
+                return;
+            }
+
+            list.innerHTML = '';
+            items.forEach(data => {
+                const li = document.createElement('li');
+                li.className = "p-3.5 sm:p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-md space-y-2.5 relative group";
+                
+                const mainMsg = data.message || 'إشعار جديد';
+                const codeValue = data.verificationCode || data.transactionId;
+                
+                const extraCode = codeValue ? `
+                    <div class="p-2.5 sm:p-3 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
+                        <span class="text-xs text-gray-400">رمز التأكيد (7 أرقام):</span>
+                        <span class="text-sm sm:text-base font-mono font-bold text-rose-400 bg-rose-500/10 px-3 py-1 rounded-lg border border-rose-500/20">${codeValue}</span>
+                    </div>
+                ` : '';
+
+                li.innerHTML = `
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="font-bold text-cyan-400"><i class="fa-solid fa-shop ml-1"></i>فرع: ${window.currentBranch}</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-gray-400 text-[11px]">${data.time || 'الآن'}</span>
+                            <!-- زر الحذف بحجم مريح ومكبر للموبايل -->
+                            <button onclick="window.deleteSingle('${data._key}')" title="حذف نهائي" class="w-8 h-8 rounded-xl bg-slate-800 text-gray-400 hover:text-white hover:bg-rose-600/80 transition flex items-center justify-center border border-slate-700">
+                                <i class="fa-solid fa-trash-can text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="text-xs sm:text-sm font-semibold text-gray-200 leading-relaxed">
+                        ${mainMsg}
+                    </div>
+                    ${extraCode}
+                `;
+                list.appendChild(li);
+            });
+        };
+
+        window.deleteSingle = async function(key) {
+            if (confirm("هل تريد حذف هذا الإشعار نهائياً؟")) {
+                await remove(ref(db, `notifications/${key}`));
+                if (window.branchesMap[window.currentBranch]) {
+                    window.branchesMap[window.currentBranch] = window.branchesMap[window.currentBranch].filter(i => i._key !== key);
+                    renderNotifications();
+                }
+            }
+        };
+
+        window.switchBranch = function(branchName) {
+            window.currentBranch = branchName;
+            document.getElementById('current-branch-title').innerText = branchName;
+
+            document.querySelectorAll('.branch-btn').forEach(btn => {
+                btn.classList.remove('border-cyan-500', 'bg-slate-700/80');
+            });
+
+            const safeId = 'branch_' + btoa(unescape(encodeURIComponent(branchName))).replace(/[^a-zA-Z0-9]/g, '');
+            const activeBtn = document.getElementById(safeId);
+            if (activeBtn) {
+                activeBtn.classList.add('border-cyan-500', 'bg-slate-700/80');
+            }
+
+            const dot = document.getElementById(`dot_${safeId}`);
+            const badge = document.getElementById(`badge_${safeId}`);
+            if (dot) dot.classList.add('hidden');
+            if (badge) {
+                badge.innerText = '0';
+                badge.classList.add('hidden');
+            }
+
+            renderNotifications();
+        };
+    </script>
+</body>
+</html>
